@@ -1,4 +1,4 @@
-package db
+package tool
 
 import (
 	"database/sql"
@@ -13,19 +13,19 @@ import (
 
 //map for converting mysql type to golang types
 var typeForMysqlToGo = map[string]string{
-	"int":                "util.Long",
-	"integer":            "util.Long",
-	"tinyint":            "util.Long",
-	"smallint":           "util.Long",
-	"mediumint":          "util.Long",
+	"int":                "int",
+	"integer":            "int",
+	"tinyint":            "int",
+	"smallint":           "int",
+	"mediumint":          "int",
 	"bigint":             "util.Long",
-	"int unsigned":       "util.Long",
-	"integer unsigned":   "util.Long",
-	"tinyint unsigned":   "util.Long",
-	"smallint unsigned":  "util.Long",
-	"mediumint unsigned": "util.Long",
-	"bigint unsigned":    "util.Long",
-	"bit":                "util.Long",
+	"int unsigned":       "int",
+	"integer unsigned":   "int",
+	"tinyint unsigned":   "int",
+	"smallint unsigned":  "int",
+	"mediumint unsigned": "int",
+	"bigint unsigned":    "int",
+	"bit":                "int",
 	"bool":               "bool",
 	"enum":               "string",
 	"set":                "string",
@@ -52,7 +52,7 @@ var typeForMysqlToGo = map[string]string{
 
 type Db2Struct struct {
 	dsn            string
-	savePath       string
+	path           string
 	db             *sql.DB
 	table          string
 	prefix         string
@@ -61,7 +61,7 @@ type Db2Struct struct {
 	realNameMethod string
 	enableJsonTag  bool   // 是否添加json的tag, 默认不添加
 	packageName    string // 生成struct的包名(默认为空的话, 则取名为: package model)
-	tagKey         string // tag字段的key值,默认是orm
+	tagKey         string // tag字段的key值,默认是xorm
 	dateToTime     bool   // 是否将 date相关字段转换为 date.Datetime,默认否
 }
 
@@ -99,7 +99,7 @@ func (t *Db2Struct) RealNameMethod(r string) *Db2Struct {
 }
 
 func (t *Db2Struct) SavePath(p string) *Db2Struct {
-	t.savePath = p
+	t.path = p
 	return t
 }
 
@@ -245,14 +245,14 @@ func (t *Db2Struct) Run() error {
 		importContent += fmt.Sprintf(")\n")
 
 		// 写入文件struct
-		var savePath string
+		var path string
 		// 是否指定保存路径
-		if t.savePath == "" {
-			savePath = fmt.Sprintf("./model/%s.go", tableName)
+		if t.path == "" {
+			path = fmt.Sprintf("./model/%s.go", tableName)
 		} else {
-			savePath = fmt.Sprintf(t.savePath+"/%s.go", tableName)
+			path = fmt.Sprintf(t.path+"/%s.go", tableName)
 		}
-		f, err := os.Create(savePath)
+		f, err := os.Create(path)
 		if err != nil {
 			fmt.Println("Can not write file")
 			return err
@@ -261,7 +261,7 @@ func (t *Db2Struct) Run() error {
 
 		f.WriteString(packageName + importContent + structContent)
 
-		cmd := exec.Command("gofmt", "-w", savePath)
+		cmd := exec.Command("gofmt", "-w", path)
 		cmd.Run()
 	}
 	return nil
